@@ -20,7 +20,9 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Install dependencies
-        run: yarn --frozen-lockfile --ignore-scripts
+        run: |
+          yarn --frozen-lockfile --ignore-scripts
+          yarn add --frozen-lockfile zod@2.0.0-beta.29 aws-sdk@2.811.0
 
       - name: Lint
         run: yarn lint
