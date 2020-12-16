@@ -4,11 +4,7 @@ import Item from '../src/lib/item';
 const item = new Item(
   'TEST_TABLE',
   {
-<<<<<<< HEAD
     stringProp: string().max(3),
-=======
-    stringProp: string(),
->>>>>>> c319215f68c430f7fdb83aec267aeb5315653fb0
   },
   ['stringProp']
 );
