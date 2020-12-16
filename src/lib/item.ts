@@ -2,7 +2,6 @@ import { object, ZodObject } from 'zod';
 import { ZodPrimitives } from './custom-zod';
 import { DynamoDB } from 'aws-sdk';
 import ItemInstance from './item.instance';
-import Query, { QueryOptions } from './query';
 import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 
 export default class Item<
@@ -87,9 +86,7 @@ export default class Item<
   /**
    * @deprecated work in progress.
    */
-  public query(queryOptions?: QueryOptions) {
-    return new Query(this.tableName, this.config.DocumentClient, queryOptions);
-  }
+  public query() {}
   /**
    * Retrieve all the items in the DynamoDB table, handling setting the LastEvaluatedKey to get all items. Internally uses multiple `DocumentClient.scan` calls, depending on how many items are in the table.
    */
