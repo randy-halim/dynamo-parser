@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Item Class Tests Correctly returns parsed value and throws for invalid 1`] = `
+Object {
+  "id": "foo",
+}
+`;
+
+exports[`Item Class Tests Gets the correct primary key 1`] = `
+Object {
+  "id": "test",
+}
+`;
+
+exports[`Item Class Tests Gets the correct primary key 2`] = `"Unable to find primary key \\"id\\" in provided object."`;

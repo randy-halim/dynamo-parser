@@ -1,42 +1,33 @@
 import { DynamoDB } from 'aws-sdk';
-import { ZodObject } from 'zod';
+import { TypeOf } from 'zod';
+import Item, { ItemSchema } from './item';
 
-export default class ItemInstance<T> {
-  /** used internally. */
+export default class ItemInstance<Origin extends Item<ItemSchema>> {
   constructor(
-    public attributes: T,
-    private schema: ZodObject<{}>,
-    private DocumentClient: DynamoDB.DocumentClient,
-    private TableName: string,
-    private key: { [attributes: string]: unknown }
+    public attributes: TypeOf<Origin['schema']>,
+    private origin: Origin
   ) {}
-  /**
-   * Parses, then save the item to DynamoDB. Internally uses `DocumentClient.update`.
-   */
   public async save() {
-    this.schema.parse(this.attributes);
-    if (!this.key) throw new Error("The primary key hasn't been set!");
+    this.origin.validate(this.attributes);
+    const primaryKey = this.origin.getPrimaryAttributes(this.attributes);
     const AttributeUpdates: DynamoDB.DocumentClient.AttributeUpdates = {};
     Object.entries(this.attributes).forEach(attribute => {
-      if (Object.keys(this.key as object).includes(attribute[0])) return;
+      if (Object.keys(primaryKey).includes(attribute[0])) return;
       AttributeUpdates[attribute[0]] = {
         Action: 'PUT',
         Value: attribute[1],
       };
     });
-    await this.DocumentClient.update({
-      TableName: this.TableName,
-      Key: this.key,
+    await this.origin.config.DocumentClient.update({
+      TableName: this.origin.tableName,
+      Key: primaryKey,
       AttributeUpdates,
     }).promise();
   }
-  /**
-   * Deletes the item from DynamoDB. Internally uses `DocumentClient.delete`
-   */
   public async delete() {
-    await this.DocumentClient.delete({
-      TableName: this.TableName,
-      Key: this.key,
+    await this.origin.config.DocumentClient.delete({
+      TableName: this.origin.tableName,
+      Key: this.origin.getPrimaryAttributes(this.attributes),
     }).promise();
   }
 }
