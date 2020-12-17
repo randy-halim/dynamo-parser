@@ -9,11 +9,9 @@ This package is in early development, and things may change at any time!
 
 ```zsh
 # with yarn
-yarn add zod@next aws-sdk # peer dependencies
 yarn add dynamo-parser
 
 # or npm
-npm i zod@next aws-sdk # peer dependencies
 npm i dynamo-parser
 ```
 
