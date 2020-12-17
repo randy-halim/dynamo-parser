@@ -1,22 +1,22 @@
 const tableConfig = {
-  tables : [
+  tables: [
     {
-      TableName : 'my-table',
-      KeySchema : [
+      TableName: 'my-table',
+      KeySchema: [
         {
-          AttributeName : 'id',
-          KeyType : 'HASH',
+          AttributeName: 'id',
+          KeyType: 'HASH',
         },
       ],
-      AttributeDefinitions : [
+      AttributeDefinitions: [
         {
-          AttributeName : 'id',
-          AttributeType : 'S',
+          AttributeName: 'id',
+          AttributeType: 'S',
         },
       ],
-      ProvisionedThroughput : {ReadCapacityUnits : 1, WriteCapacityUnits : 1},
+      ProvisionedThroughput: { ReadCapacityUnits: 1, WriteCapacityUnits: 1 },
     },
   ],
-  port : 8000,
+  port: 8000,
 };
 module.exports = tableConfig;
