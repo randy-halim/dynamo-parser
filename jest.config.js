@@ -1,4 +1,4 @@
 const config = {
-  // preset: '@shelf/jest-dynamodb',
+    // preset: '@shelf/jest-dynamodb',
 };
 module.exports = config;
