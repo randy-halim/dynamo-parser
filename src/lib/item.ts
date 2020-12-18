@@ -1,8 +1,7 @@
 import { object, TypeOf, ZodObject } from 'zod';
 import { ZodPrimitives } from './custom-zod';
-import { DynamoDB } from 'aws-sdk';
 import ItemInstance from './item.instance';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 
 export default class Item<Schema extends ItemSchema> {
   public schema: ZodObject<Schema, 'strip'>;
@@ -10,11 +9,10 @@ export default class Item<Schema extends ItemSchema> {
     public tableName: string,
     schema: Schema,
     private primaryAttributeNames: PrimaryAttributeNames,
-    public config: ItemConfig = {
-      DocumentClient: new DynamoDB.DocumentClient({
-        region: 'us-west-2',
-      }),
-    }
+    public DocumentClient: DocumentClient = new DynamoDB.DocumentClient({
+      region: 'us-west-2',
+      apiVersion: '2012-08-10',
+    })
   ) {
     this.schema = object(schema).strip();
   }
@@ -41,7 +39,7 @@ export default class Item<Schema extends ItemSchema> {
   public async get(Key: {
     [keyAttribute: string]: unknown;
   }): Promise<ItemInstance<Item<Schema>>> {
-    const { Item } = await this.config.DocumentClient.get({
+    const { Item } = await this.DocumentClient.get({
       Key,
       TableName: this.tableName,
     }).promise();
@@ -98,7 +96,7 @@ export default class Item<Schema extends ItemSchema> {
         QueryExpression += '#SK BETWEEN :sk AND :skb ';
         break;
     }
-    const { Items } = await this.config.DocumentClient.query({
+    const { Items } = await this.DocumentClient.query({
       TableName: this.tableName,
       KeyConditionExpression: QueryExpression,
       ExpressionAttributeNames: AttributeNames,
@@ -112,7 +110,7 @@ export default class Item<Schema extends ItemSchema> {
     let LastEvaluatedKey: DocumentClient.Key | undefined;
     let items: DocumentClient.ItemList = [];
     do {
-      const res = await this.config.DocumentClient.scan({
+      const res = await this.DocumentClient.scan({
         TableName: this.tableName,
         ExclusiveStartKey: LastEvaluatedKey,
       }).promise();
@@ -137,7 +135,4 @@ export type QueryOperator =
 export interface AttributeQuery {
   attributeName: string;
   query: QueryOperator;
-}
-interface ItemConfig {
-  DocumentClient: DynamoDB.DocumentClient;
 }

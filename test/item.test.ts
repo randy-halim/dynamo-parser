@@ -8,9 +8,7 @@ const item = new Item(
     id: string().max(5),
   },
   ['id'],
-  {
-    DocumentClient,
-  }
+  DocumentClient
 );
 
 describe('Item Class Tests (No AWS Operations)', () => {

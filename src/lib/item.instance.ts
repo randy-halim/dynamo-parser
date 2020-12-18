@@ -8,13 +8,13 @@ export default class ItemInstance<Origin extends Item<ItemSchema>> {
   ) {}
   public async save() {
     this.origin.validate(this.attributes);
-    await this.origin.config.DocumentClient.put({
+    await this.origin.DocumentClient.put({
       TableName: this.origin.tableName,
       Item: this.attributes,
     }).promise();
   }
   public async delete() {
-    await this.origin.config.DocumentClient.delete({
+    await this.origin.DocumentClient.delete({
       TableName: this.origin.tableName,
       Key: this.origin.getPrimaryAttributes(this.attributes),
     }).promise();
