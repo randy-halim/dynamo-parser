@@ -1,0 +1,20 @@
+name: 'CI: Publish Release'
+on:
+  push:
+    branches:
+      - release
+jobs:
+  publish:
+    name: Build and publish to NPM
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+      - name: Build
+        run: yarn build
+      - name: Publish to NPM
+        uses: JS-DevTools/npm-publish@v1
+        with:
+          token: ${{ secrets.NPM_TOKEN }}
+          check-version: true
