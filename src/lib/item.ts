@@ -2,6 +2,7 @@ import { object, TypeOf, ZodObject } from 'zod';
 import { ZodPrimitives } from './custom-zod';
 import ItemInstance from './item.instance';
 import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import Query from './query';
 
 export default class Item<Schema extends ItemSchema> {
   public schema: ZodObject<Schema, 'strip'>;
@@ -46,65 +47,8 @@ export default class Item<Schema extends ItemSchema> {
     if (!Item) throw new Error("Your getItem request didn't return a item.");
     return new ItemInstance(this.validate(Item), this);
   }
-  public async query(
-    primaryAttribute: AttributeQuery,
-    indexName?: string,
-    secondaryAttribute?: AttributeQuery
-  ): Promise<ItemInstance<Item<Schema>>[]> {
-    const AttributeNames = {
-      '#PK': primaryAttribute.attributeName,
-      ...(secondaryAttribute && {
-        '#SK': secondaryAttribute.attributeName,
-      }),
-    };
-    const AttributeValues = {
-      ':pk': primaryAttribute.query[1],
-      ':pkb': primaryAttribute.query[2],
-      ...(secondaryAttribute && {
-        ':sk': secondaryAttribute.query[1],
-        ':skb': secondaryAttribute.query[2],
-      }),
-    };
-    let QueryExpression: string = '';
-    switch (primaryAttribute.query[0]) {
-      case 'starts_with':
-        QueryExpression += 'starts_with( #PK, :pk ) ';
-        break;
-      case '=':
-      case '<':
-      case '<=':
-      case '>':
-      case '>=':
-        QueryExpression += `#PK ${primaryAttribute.query[0]} :pk `;
-        break;
-      case 'between':
-        QueryExpression += '#PK BETWEEN :pk AND :pkb ';
-        break;
-    }
-    switch (secondaryAttribute?.query[0]) {
-      case 'starts_with':
-        QueryExpression += 'starts_with( #SK, :sk ) ';
-        break;
-      case '=':
-      case '<':
-      case '<=':
-      case '>':
-      case '>=':
-        QueryExpression += `#SK ${primaryAttribute.query[0]} :sk `;
-        break;
-      case 'between':
-        QueryExpression += '#SK BETWEEN :sk AND :skb ';
-        break;
-    }
-    const { Items } = await this.DocumentClient.query({
-      TableName: this.tableName,
-      KeyConditionExpression: QueryExpression,
-      ExpressionAttributeNames: AttributeNames,
-      ExpressionAttributeValues: AttributeValues,
-      IndexName: indexName,
-    }).promise();
-    if (!Items) throw new Error("Your query didn't return anything.");
-    return Items.map(item => new ItemInstance(this.validate(item), this));
+  public query(indexName?: string): Query<Item<Schema>> {
+    return new Query(this, indexName);
   }
   public async all(): Promise<ItemInstance<Item<Schema>>[]> {
     let LastEvaluatedKey: DocumentClient.Key | undefined;
