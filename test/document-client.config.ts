@@ -3,8 +3,8 @@ import { DocumentClient } from 'aws-sdk/clients/dynamodb';
 const isTest = process.env.JEST_WORKER_ID;
 export default new DocumentClient({
   ...(isTest && {
-    endpoint: 'localhost:8000',
+    endpoint: 'http://127.0.0.1:8000',
     sslEnabled: false,
-    region: 'local',
+    region: 'us-west-2',
   }),
 });
