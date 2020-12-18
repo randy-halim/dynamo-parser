@@ -1,15 +1,17 @@
 import { string } from 'zod';
 import Item from '../src';
+import DocumentClient from './document-client.config';
 
 const item = new Item(
   'my-table',
   {
     id: string().max(5),
   },
-  ['id']
+  ['id'],
+  DocumentClient
 );
 
-describe('Item Class Tests', () => {
+describe('Item Class Tests (No AWS Operations)', () => {
   it('Creates an item without error', () => {
     expect(item).toBeInstanceOf(Item);
   });
@@ -18,7 +20,7 @@ describe('Item Class Tests', () => {
     expect(() => item.create({ foo: 'long_id' })).toThrow();
     expect(() => item.create({ foo: true })).toThrow();
   });
-  it('Gets the correct primary key', () => {
+  it('Gets the primary attribute from a specified item', () => {
     const mockItem = {
       id: 'test',
       attr1: 'foo',
@@ -32,3 +34,17 @@ describe('Item Class Tests', () => {
     ).toThrowErrorMatchingSnapshot();
   });
 });
+// describe('Item Retrieval Tests (AWS Operations)', () => {
+//   it('Saves an item to the database', () => {
+//     const myItem = item.create({ id: 'test' });
+//     return myItem.save();
+//   });
+//   it('Gets an item from the database', async () => {
+//     const myItem = await item.get({ id: 'test' });
+//     expect(myItem).toMatchSnapshot();
+//   });
+//   it('Gets all items from the database', async () => {
+//     const items = await item.all();
+//     expect(items).toMatchSnapshot();
+//   });
+// });

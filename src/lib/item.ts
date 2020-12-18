@@ -1,8 +1,8 @@
 import { object, TypeOf, ZodObject } from 'zod';
 import { ZodPrimitives } from './custom-zod';
-import { DynamoDB } from 'aws-sdk';
 import ItemInstance from './item.instance';
-import { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import Query from './query';
 
 export default class Item<Schema extends ItemSchema> {
   public schema: ZodObject<Schema, 'strip'>;
@@ -10,9 +10,10 @@ export default class Item<Schema extends ItemSchema> {
     public tableName: string,
     schema: Schema,
     private primaryAttributeNames: PrimaryAttributeNames,
-    public config: ItemConfig = {
-      DocumentClient: new DynamoDB.DocumentClient({ region: 'us-west-2' }),
-    }
+    public DocumentClient: DocumentClient = new DynamoDB.DocumentClient({
+      region: 'us-west-2',
+      apiVersion: '2012-08-10',
+    })
   ) {
     this.schema = object(schema).strip();
   }
@@ -39,19 +40,21 @@ export default class Item<Schema extends ItemSchema> {
   public async get(Key: {
     [keyAttribute: string]: unknown;
   }): Promise<ItemInstance<Item<Schema>>> {
-    const { Item } = await this.config.DocumentClient.get({
+    const { Item } = await this.DocumentClient.get({
       Key,
       TableName: this.tableName,
     }).promise();
     if (!Item) throw new Error("Your getItem request didn't return a item.");
     return new ItemInstance(this.validate(Item), this);
   }
-  public query() {}
-  public async all() {
+  public query(indexName?: string): Query<Item<Schema>> {
+    return new Query(this, indexName);
+  }
+  public async all(): Promise<ItemInstance<Item<Schema>>[]> {
     let LastEvaluatedKey: DocumentClient.Key | undefined;
     let items: DocumentClient.ItemList = [];
     do {
-      const res = await this.config.DocumentClient.scan({
+      const res = await this.DocumentClient.scan({
         TableName: this.tableName,
         ExclusiveStartKey: LastEvaluatedKey,
       }).promise();
@@ -59,7 +62,7 @@ export default class Item<Schema extends ItemSchema> {
       if (!res.Items) break;
       items.push(...res.Items);
     } while (LastEvaluatedKey);
-    return items.map(item => this.schema.parse(item));
+    return items.map(item => new ItemInstance(this.validate(item), this));
   }
 }
 
@@ -68,6 +71,12 @@ export type SingleItemSchema = {
   [attribute: string]: ZodPrimitives | ZodObject<SingleItemSchema>;
 };
 export type ItemSchema = SingleItemSchema;
-interface ItemConfig {
-  DocumentClient: DynamoDB.DocumentClient;
+export type QueryOperator =
+  | ['=', unknown]
+  | ['starts_with', string]
+  | ['>=' | '>' | '<=' | '<', number]
+  | ['between', number, number];
+export interface AttributeQuery {
+  attributeName: string;
+  query: QueryOperator;
 }
