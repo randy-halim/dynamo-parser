@@ -34,17 +34,17 @@ describe('Item Class Tests (No AWS Operations)', () => {
     ).toThrowErrorMatchingSnapshot();
   });
 });
-describe('Item Retrieval Tests (AWS Operations)', () => {
-  it('Saves an item to the database', () => {
-    const myItem = item.create({ id: 'test' });
-    return myItem.save();
-  });
-  it('Gets an item from the database', async () => {
-    const myItem = await item.get({ id: 'test' });
-    expect(myItem).toMatchSnapshot();
-  });
-  it('Gets all items from the database', async () => {
-    const items = await item.all();
-    expect(items).toMatchSnapshot();
-  });
-});
+// describe('Item Retrieval Tests (AWS Operations)', () => {
+//   it('Saves an item to the database', () => {
+//     const myItem = item.create({ id: 'test' });
+//     return myItem.save();
+//   });
+//   it('Gets an item from the database', async () => {
+//     const myItem = await item.get({ id: 'test' });
+//     expect(myItem).toMatchSnapshot();
+//   });
+//   it('Gets all items from the database', async () => {
+//     const items = await item.all();
+//     expect(items).toMatchSnapshot();
+//   });
+// });
