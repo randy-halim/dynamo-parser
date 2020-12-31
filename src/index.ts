@@ -1,4 +1,5 @@
 import Item from './lib/item';
-export * from './lib/item';
-export { Item };
+import Transactive from './lib/transactive';
+
 export default Item;
+export { Item, Transactive };
