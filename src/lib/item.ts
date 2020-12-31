@@ -3,6 +3,7 @@ import { ZodPrimitives } from './custom-zod';
 import ItemInstance from './item.instance';
 import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
 import Query from './query';
+import { Key } from './key';
 
 export default class Item<Schema extends ItemSchema> {
   public schema: ZodObject<Schema, 'strip'>;
@@ -37,9 +38,7 @@ export default class Item<Schema extends ItemSchema> {
     const res = this.validate(item);
     return new ItemInstance(res, this);
   }
-  public async get(Key: {
-    [keyAttribute: string]: unknown;
-  }): Promise<ItemInstance<Item<Schema>>> {
+  public async get(Key: Key): Promise<ItemInstance<Item<Schema>>> {
     const { Item } = await this.DocumentClient.get({
       Key,
       TableName: this.tableName,
