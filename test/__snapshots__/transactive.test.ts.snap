@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Transactive Get Operations Gets all items (Books) 1`] = `
+Array [
+  Object {
+    "bookName": "The Earth Tome",
+    "id": "BOOK1",
+    "rating": 4,
+  },
+  Object {
+    "bookName": "The Water Tome",
+    "id": "BOOK2",
+    "rating": 5,
+  },
+  Object {
+    "bookName": "The Fire Tome",
+    "id": "BOOK3",
+    "rating": 5,
+  },
+]
+`;
+
+exports[`Transactive Get Operations Should throw an error getting a non-existent item 1`] = `
+[Error: [
+  {
+    "code": "invalid_type",
+    "expected": "object",
+    "received": "undefined",
+    "path": [],
+    "message": "Required"
+  }
+]]
+`;

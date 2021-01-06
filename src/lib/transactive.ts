@@ -19,7 +19,7 @@ export default class Transactive<Origin extends Item<ItemSchema>> {
         };
       }),
     }).promise();
-    return Responses?.map(item => this.Item.validate(item));
+    return Responses?.map(({ Item }) => this.Item.validate(Item));
   }
   public async save(itemsToSave: ItemInstance<Origin>[]) {
     if (itemsToSave.length === 0 || itemsToSave.length > 10)

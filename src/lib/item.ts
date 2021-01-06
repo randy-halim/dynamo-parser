@@ -34,7 +34,9 @@ export default class Item<Schema extends ItemSchema> {
     });
     return primaryKey;
   }
-  public create(item: unknown): ItemInstance<Item<Schema>> {
+  public create(
+    item: TypeOf<Item<Schema>['schema']>
+  ): ItemInstance<Item<Schema>> {
     const res = this.validate(item);
     return new ItemInstance(res, this);
   }
