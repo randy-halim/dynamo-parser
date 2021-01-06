@@ -17,7 +17,9 @@ describe('Item Class Tests (No AWS Operations)', () => {
   });
   it('Correctly returns parsed value and throws for invalid', () => {
     expect(item.create({ id: 'foo' }).attributes).toMatchSnapshot();
+    // @ts-expect-error
     expect(() => item.create({ foo: 'long_id' })).toThrow();
+    // @ts-expect-error
     expect(() => item.create({ foo: true })).toThrow();
   });
   it('Gets the primary attribute from a specified item', () => {
