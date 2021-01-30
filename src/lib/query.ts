@@ -1,7 +1,5 @@
-import {
-  ExpressionAttributeNameMap,
-  ExpressionAttributeValueMap,
-} from 'aws-sdk/clients/dynamodb';
+import DynamoDB from '@aws-sdk/client-dynamodb';
+import DynamoDBUtils from '@aws-sdk/util-dynamodb';
 import Item, { ItemSchema } from './item';
 import ItemInstance from './item.instance';
 
@@ -32,8 +30,10 @@ export default class Query<Origin extends Item<ItemSchema>> {
 class PrimaryAttributeQuery<Origin extends Query<Item<ItemSchema>>> {
   constructor(
     private origin: Origin,
-    private expressionAttributeNames: ExpressionAttributeNames,
-    private expressionAttributeValues: ExpressionAttributeValues,
+    private expressionAttributeNames: { [key: string]: string },
+    private expressionAttributeValues: {
+      [key: string]: DynamoDB.AttributeValue;
+    },
     private index?: string
   ) {}
   public expression = this.origin.expression;
@@ -41,13 +41,11 @@ class PrimaryAttributeQuery<Origin extends Query<Item<ItemSchema>>> {
     const { DocumentClient, tableName } = this.origin.origin;
     const { Items } = await DocumentClient.query({
       TableName: tableName,
-      ExpressionAttributeNames: (this
-        .expressionAttributeNames as unknown) as ExpressionAttributeNameMap,
-      ExpressionAttributeValues: (this
-        .expressionAttributeValues as unknown) as ExpressionAttributeValueMap,
+      ExpressionAttributeNames: this.expressionAttributeNames,
+      ExpressionAttributeValues: this.expressionAttributeValues,
       KeyConditionExpression: this.expression,
       IndexName: this.index,
-    }).promise();
+    });
     if (!Items) throw new Error('No items were returned from the table.');
     return Items.map(item => new ItemInstance(item, this.origin.origin));
   }

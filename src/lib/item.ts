@@ -1,7 +1,9 @@
 import { object, TypeOf, ZodObject } from 'zod';
 import { ZodPrimitives } from './custom-zod';
 import ItemInstance from './item.instance';
-import DynamoDB, { DocumentClient } from 'aws-sdk/clients/dynamodb';
+import DynamoDB from '@aws-sdk/client-dynamodb';
+import DynamoDBUtils from '@aws-sdk/util-dynamodb';
+import DynamoDBClient from './documentclient';
 import Query from './query';
 import { Key } from './key';
 
@@ -11,10 +13,7 @@ export default class Item<Schema extends ItemSchema> {
     public tableName: string,
     schema: Schema,
     private primaryAttributeNames: PrimaryAttributeNames,
-    public DocumentClient: DocumentClient = new DynamoDB.DocumentClient({
-      region: 'us-west-2',
-      apiVersion: '2012-08-10',
-    })
+    public DocumentClient: DynamoDB.DynamoDB = DynamoDBClient
   ) {
     this.schema = object(schema).strip();
   }
@@ -41,10 +40,10 @@ export default class Item<Schema extends ItemSchema> {
     return new ItemInstance(res, this);
   }
   public async get(Key: Key): Promise<ItemInstance<Item<Schema>>> {
-    const { Item } = await this.DocumentClient.get({
-      Key,
+    const { Item } = await this.DocumentClient.getItem({
+      Key: DynamoDBUtils.marshall(Key),
       TableName: this.tableName,
-    }).promise();
+    });
     if (!Item) throw new Error("Your getItem request didn't return a item.");
     return new ItemInstance(this.validate(Item), this);
   }
@@ -52,18 +51,23 @@ export default class Item<Schema extends ItemSchema> {
     return new Query(this, indexName);
   }
   public async all(): Promise<ItemInstance<Item<Schema>>[]> {
-    let LastEvaluatedKey: DocumentClient.Key | undefined;
-    let items: DocumentClient.ItemList = [];
+    let LastEvaluatedKey:
+      | { [key: string]: DynamoDB.AttributeValue }
+      | undefined;
+    let items: { [key: string]: DynamoDB.AttributeValue }[] = [];
     do {
       const res = await this.DocumentClient.scan({
         TableName: this.tableName,
         ExclusiveStartKey: LastEvaluatedKey,
-      }).promise();
+      });
       LastEvaluatedKey = res.LastEvaluatedKey;
       if (!res.Items) break;
       items.push(...res.Items);
     } while (LastEvaluatedKey);
-    return items.map(item => new ItemInstance(this.validate(item), this));
+    return items.map(
+      item =>
+        new ItemInstance(this.validate(DynamoDBUtils.unmarshall(item)), this)
+    );
   }
 }
 
