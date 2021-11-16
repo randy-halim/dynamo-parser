@@ -61,7 +61,7 @@
     "typescript": "^4.1.3"
   },
   "dependencies": {
-    "aws-sdk": "^2.811.0",
+    "aws-sdk": "^2.814.0",
     "zod": "^2.0.0-beta.29"
   }
 }
